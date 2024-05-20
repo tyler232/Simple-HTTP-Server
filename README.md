@@ -46,11 +46,11 @@ sudo firewall-cmd --reload
 ```bash
 server  # host current directory on port 8080
 
-server 8000 # host on port 8000, make sure firewall allows
+server --port=8000 # host on port 8000, make sure firewall allows
 
-server --directory dir/my_dir # host directory with path dir/my_dir on port 8080
+server --directory=dir/my_dir # host directory with path dir/my_dir on port 8080
 
-server 8000 --directory dir/my_dir # host directory with path dir/my_dir on port 8000
+server 8000 --port=8000 --directory=dir/my_dir # host directory with path dir/my_dir on port 8000
 ```
 
 

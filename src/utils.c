@@ -6,7 +6,9 @@
 #include <ctype.h>
 
 void print_usage() {
-    fprintf(stderr, "Usage: ./mini_server [port] [--directory path]\n");
+    fprintf(stderr, "Usage: program [--port=<port>] [--directory=<directory>]\n");
+    fprintf(stderr, "  --port=<port>         Specify the port number (1024-65535).\n");
+    fprintf(stderr, "  --directory=<directory>  Specify the directory to change to.\n");
 }
 
 int is_numeric(const char *str) {
