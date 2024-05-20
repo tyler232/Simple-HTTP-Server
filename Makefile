@@ -5,7 +5,7 @@ CFLAGS = -Wall -Wextra -g
 SRCDIR = src
 INCDIR = include
 OBJDIR = obj
-BINDIR = bin
+BINDIR = $(HOME)/server_bin
 
 SERVER_SRC = $(OBJDIR)/server.c $(SRCDIR)/rw_http.c $(SRCDIR)/utils.c
 SERVER_HDR = $(INCDIR)/rw_http.h $(INCDIR)/utils.h
