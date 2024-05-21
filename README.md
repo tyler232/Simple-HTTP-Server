@@ -50,7 +50,7 @@ server --port=8000 # host on port 8000, make sure firewall allows
 
 server --directory=dir/my_dir # host directory with path dir/my_dir on port 8080
 
-server 8000 --port=8000 --directory=dir/my_dir # host directory with path dir/my_dir on port 8000
+server --port=8000 --directory=dir/my_dir # host directory with path dir/my_dir on port 8000
 ```
 
 
