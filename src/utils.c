@@ -30,3 +30,12 @@ char* local_path_create(char* path) {
     return local_path;
 }
 
+int compare_string(const void *a, const void *b) {
+    const char **str_A = (const char **)a;
+    const char **str_B = (const char **)b;
+    return strcasecmp(*str_A, *str_B);
+}
+
+void sort_string_array(char **array, int size) {
+    qsort(array, size, sizeof(char *), compare_string);
+}
