@@ -62,3 +62,7 @@ Contributions are welcome! Please fork the repository and submit pull requests.
 ## Contact
 
 For any questions or issues, please open an issue on this repo.
+
+## Future Plan
+
+Host website if index.html exists
