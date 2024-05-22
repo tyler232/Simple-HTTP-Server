@@ -202,8 +202,27 @@ void handle_client(int client_socket) {
     close(client_socket);
 }
 
-// handle directory request, list content of directory
+// handle directory request, list content of directory if index.html or index.htm not found, 
+// else serve index.html or index.htm
 void handle_dirreq(int client_socket, char* path) {
+    char index_path_html[BUFFER_SIZE];
+    char index_path_htm[BUFFER_SIZE];
+    snprintf(index_path_html, sizeof(index_path_html), "%s/index.html", path);
+    snprintf(index_path_htm, sizeof(index_path_htm), "%s/index.htm", path);
+
+    struct stat st;
+
+    if ((stat(index_path_html, &st) == 0 && S_ISREG(st.st_mode)) ||
+        (stat(index_path_htm, &st) == 0 && S_ISREG(st.st_mode))) {
+        // Either index.html or index.htm exists and is a regular file, serve it
+        if (stat(index_path_html, &st) == 0 && S_ISREG(st.st_mode)) {
+            handle_filereq(client_socket, index_path_html);
+        } else {
+            handle_filereq(client_socket, index_path_htm);
+        }
+        return;
+    }
+
     char **contents = (char **)malloc(sizeof(char *) * BUFFER_SIZE);
     int num_contents = 0;
     int current_buffer_size = BUFFER_SIZE;
