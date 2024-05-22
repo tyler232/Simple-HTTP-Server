@@ -1,5 +1,9 @@
 # Simple-HTTP-Server
 
+> Simple HTTP server for directory listing or hosting HTML files
+
+[![License](https://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE)
+
 ## Overview
 
 This C program is a basic HTTP server implementation designed to handle HTTP GET requests for files or directories. It utilizes epoll, a system call available in Linux, for efficiently managing multiple simultaneous connections. When a file is requested, the server serves it as downloadable content. In the case of a directory request, the server provides a basic listing of the directory contents. If an HTML file is requested, it is hosted and served as a webpage instead of being offered as downloadable content. If `index.html` inside hosted directory, it will serve the website base on it instead of directory listing. This server is suitable for simple file serving tasks and can handle multiple connections concurrently.
