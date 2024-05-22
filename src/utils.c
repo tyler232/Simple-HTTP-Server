@@ -36,7 +36,6 @@ int compare_string(const void *a, const void *b) {
     return strcasecmp(*str_A, *str_B);
 }
 
-int sort_string_array(char **array, int size) {
+void sort_string_array(char **array, int size) {
     qsort(array, size, sizeof(char *), compare_string);
-    return 0;
 }
