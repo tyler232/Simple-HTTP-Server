@@ -263,12 +263,19 @@ void handle_filereq(int client_socket, char* path) {
         return;
     }
 
+    char *filename = strrchr(path, '/');
+    if (filename == NULL) {
+        filename = path;
+    } else {
+        filename++;
+    }
+
     char response_header[BUFFER_SIZE];
     snprintf(response_header, sizeof(response_header),
              "HTTP/1.1 200 OK\r\n"
              "Content-Disposition: attachment; filename=\"%s\"\r\n"
              "Content-Type: application/octet-stream\r\n"
-             "Connection: close\r\n\r\n", path);
+             "Connection: close\r\n\r\n", filename);
 
     write(client_socket, response_header, strlen(response_header));
 
