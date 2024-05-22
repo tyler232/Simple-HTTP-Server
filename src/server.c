@@ -241,6 +241,7 @@ void handle_dirreq(int client_socket, char* path) {
     strcat(response_header, "<h1>Directory listing</h1>\n<hr>\n<ul>\n");
     write(client_socket, response_header, strlen(response_header));
 
+    sort_string_array(contents, num_contents);
     char curr_line[BUFFER_SIZE];
     for (int i = 0; i < num_contents; i++) {
         snprintf(curr_line, sizeof(curr_line), "<li><a href=\"%s\">%s</a></li>\n", contents[i], contents[i]);
