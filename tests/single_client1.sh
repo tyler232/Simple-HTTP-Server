@@ -1,5 +1,5 @@
 #!/bin/bash
-# ./bin/server --directory tests/example_dir/
+# server --directory=tests/example_dir/
 # This script is used to test the single client accessing scenario.
 
 URL="http://localhost:8080"

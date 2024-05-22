@@ -203,39 +203,54 @@ void handle_client(int client_socket) {
 }
 
 void handle_dirreq(int client_socket, char* path) {
+    char **contents = (char **)malloc(sizeof(char *) * BUFFER_SIZE);
+    int num_contents = 0;
+    int current_buffer_size = BUFFER_SIZE;
+
     DIR *d;
     struct dirent *dir;
     d = opendir(path);
     if (d) {
-        char response[BUFFER_SIZE] = RESPONSE_OK;
-        strcat(response, "<h1>Directory listing</h1>\n<hr>\n<ul>\n");
         while ((dir = readdir(d)) != NULL) {
-            if (dir->d_name[0] == '.')
+            char *curr_name = dir->d_name;
+            if (strcmp(curr_name, "..") == 0 || strcmp(curr_name, ".") == 0)
                 continue;
-            char curr_line[BUFFER_SIZE] = "<li><a href=\"";
-            strcat(curr_line, dir->d_name);
 
+            char *name = (char *)malloc(strlen(curr_name) + 2);
+            strcpy(name, curr_name);
             if (dir->d_type == DT_DIR) {
-                strcat(curr_line, "/");
+                strcat(name, "/");
             }
 
-            strcat(curr_line, "\">");
-            strcat(curr_line, dir->d_name);
-
-            if (dir->d_type == DT_DIR) {
-                strcat(curr_line, "/");
+            contents[num_contents] = name;
+            num_contents++;
+            if (num_contents >= current_buffer_size) {
+                current_buffer_size *= 2;
+                contents = (char **)realloc(contents, sizeof(char *) * current_buffer_size);
             }
-
-            strcat(curr_line, "</a></li>\n");
-            strcat(response, curr_line);
         }
-        strcat(response, "</ul>\n<hr>\n</body>\n</html>\n");
         closedir(d);
-        write(client_socket, response, strlen(response));
     } else {
         // directory not found
         write_404(client_socket);
+        free(contents);
+        return;
     }
+
+    char response_header[BUFFER_SIZE] = RESPONSE_OK;
+    strcat(response_header, "<h1>Directory listing</h1>\n<hr>\n<ul>\n");
+    write(client_socket, response_header, strlen(response_header));
+
+    char curr_line[BUFFER_SIZE];
+    for (int i = 0; i < num_contents; i++) {
+        snprintf(curr_line, sizeof(curr_line), "<li><a href=\"%s\">%s</a></li>\n", contents[i], contents[i]);
+        write(client_socket, curr_line, strlen(curr_line));
+        free(contents[i]);
+    }
+
+    char response[BUFFER_SIZE] = "</ul>\n<hr>\n</body>\n</html>\n";
+    write(client_socket, response, strlen(response));
+    free(contents);
 }
 
 void handle_filereq(int client_socket, char* path) {
