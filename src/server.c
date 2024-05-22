@@ -202,6 +202,7 @@ void handle_client(int client_socket) {
     close(client_socket);
 }
 
+// handle directory request, list content of directory
 void handle_dirreq(int client_socket, char* path) {
     char **contents = (char **)malloc(sizeof(char *) * BUFFER_SIZE);
     int num_contents = 0;
@@ -254,6 +255,7 @@ void handle_dirreq(int client_socket, char* path) {
     free(contents);
 }
 
+// Handle file request, if file is an html then host it, else download it
 void handle_filereq(int client_socket, char* path) {
     int file_fd = open(path, O_RDONLY);
     if (file_fd < 0) {
@@ -270,12 +272,20 @@ void handle_filereq(int client_socket, char* path) {
         filename++;
     }
 
+    // if file is html, send as text/html, otherwise send as application/octet-stream
     char response_header[BUFFER_SIZE];
-    snprintf(response_header, sizeof(response_header),
-             "HTTP/1.1 200 OK\r\n"
-             "Content-Disposition: attachment; filename=\"%s\"\r\n"
-             "Content-Type: application/octet-stream\r\n"
-             "Connection: close\r\n\r\n", filename);
+    if (strstr(filename, ".html") != NULL || strstr(filename, ".htm") != NULL) {
+        snprintf(response_header, sizeof(response_header),
+                 "HTTP/1.1 200 OK\r\n"
+                 "Content-Type: text/html\r\n"
+                 "Connection: close\r\n\r\n");
+    } else {
+        snprintf(response_header, sizeof(response_header),
+                "HTTP/1.1 200 OK\r\n"
+                "Content-Disposition: attachment; filename=\"%s\"\r\n"
+                "Content-Type: application/octet-stream\r\n"
+                "Connection: close\r\n\r\n", filename);
+    }
 
     write(client_socket, response_header, strlen(response_header));
 

@@ -20,7 +20,7 @@ int is_numeric(const char *str) {
     return 1;
 }
 
-char* local_path_create(char* path) {
+char* local_path_create(char *path) {
     char* local_path = path;
     if (strcmp(local_path, "/") == 0) {
         local_path = ".";
