@@ -328,6 +328,11 @@ int set_non_blocking(int fd) {
 }
 
 void parse_args(int argc, char **argv) {
+    if (argc > 3) {
+        print_usage();
+        exit(EXIT_FAILURE);
+    }
+
     switch (argc) {
         case 1:
             break;
