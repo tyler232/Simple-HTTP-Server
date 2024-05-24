@@ -6,7 +6,7 @@
 #include <ctype.h>
 
 void print_usage() {
-    fprintf(stderr, "Usage: program [--port=<port>] [--directory=<directory>]\n");
+    fprintf(stderr, "Usage: server [--port=<port>] [--directory=<directory>]\n");
     fprintf(stderr, "  --port=<port>         Specify the port number (1024-65535).\n");
     fprintf(stderr, "  --directory=<directory>  Specify the directory to change to.\n");
 }

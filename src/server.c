@@ -29,8 +29,12 @@
 #define BUFFER_SIZE 1024
 #define MAX_EVENTS 128
 
+
 static int port = DEFAULT_PORT;
 static int server_fd, epoll_fd;
+static int port_set = 0;
+static int directory_set = 0;
+
 
 void run_server();
 void close_server();
@@ -39,6 +43,8 @@ void handle_dirreq(int client_socket, char* path);
 void handle_filereq(int client_socket, char* path);
 int set_non_blocking(int fd);
 void parse_args(int argc, char **argv);
+void set_port(const char *arg);
+void set_directory(const char *arg);
 
 int main(int argc, char **argv) {
     parse_args(argc, argv);
@@ -333,66 +339,52 @@ void parse_args(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    switch (argc) {
-        case 1:
-            break;
-        case 2:
-            if (strncmp(argv[1], "--port=", 7) == 0) {
-                char* port_number = strchr(argv[1], '=') + 1;
-                if (is_numeric(port_number)) {
-                    port = atoi(port_number);
-                    if (port < 1024 || port > 65535) {
-                        fprintf(stderr, "Invalid port number\n");
-                        exit(EXIT_FAILURE);
-                    }
-                } else {
-                    print_usage();
-                    exit(EXIT_FAILURE);
-                } 
-            } else if (strncmp(argv[1], "--directory=", 12) == 0) {
-                char* directory_path = strchr(argv[1], '=') + 1;
-                if (chdir(directory_path) < 0) {
-                    perror("Failed to change directory");
-                    exit(EXIT_FAILURE);
-                }
-            } else {
-                print_usage();
-                exit(EXIT_FAILURE);
-            }
-            break;
-        case 3:
-            if ((strncmp(argv[1], "--port=", 7) == 0 && strncmp(argv[2], "--directory=", 12) == 0) || 
-                (strncmp(argv[1], "--directory=", 12) == 0 && strncmp(argv[2], "--port=", 7) == 0)) {
-                char *port_number = (strncmp(argv[1], "--port", 6) == 0) ? 
-                                    strchr(argv[1], '=') + 1 : 
-                                    strchr(argv[2], '=') + 1;
-
-                char *directory_path = (strncmp(argv[1], "--directory", 11) == 0) ? 
-                                       strchr(argv[1], '=') + 1 : 
-                                       strchr(argv[2], '=') + 1;
-                                       
-                if (is_numeric(port_number)) {
-                    port = atoi(port_number);
-                    if (port < 1024 || port > 65535) {
-                        fprintf(stderr, "Invalid port number\n");
-                        exit(EXIT_FAILURE);
-                    }
-                } else {
-                    print_usage();
-                    exit(EXIT_FAILURE);
-                }
-
-                if (chdir(directory_path) < 0) {
-                    perror("Failed to change directory");
-                    exit(EXIT_FAILURE);
-                }
-            } else {
-                print_usage();
-                exit(EXIT_FAILURE);
-            }
-            break;
-        default:
+    for (int i = 1; i < argc; ++i) {
+        if (strncmp(argv[i], "--port=", 7) == 0) {
+            set_port(argv[i]);
+        } else if (strncmp(argv[i], "--directory=", 12) == 0) {
+            set_directory(argv[i]);
+        } else {
             print_usage();
             exit(EXIT_FAILURE);
+        }
     }
 }
+
+void set_port(const char *arg) {
+    if (port_set) {
+        fprintf(stderr, "Error: --port specified multiple times\n");
+        print_usage();
+        exit(EXIT_FAILURE);
+    }
+
+    const char *port_number = strchr(arg, '=') + 1;
+    if (is_numeric(port_number)) {
+        port = atoi(port_number);
+        if (port < 1024 || port > 65535) {
+            fprintf(stderr, "Invalid port number\n");
+            exit(EXIT_FAILURE);
+        }
+        port_set = 1;
+    } else {
+        fprintf(stderr, "Port number is not numeric\n");
+        print_usage();
+        exit(EXIT_FAILURE);
+    }
+}
+
+void set_directory(const char *arg) {
+    if (directory_set) {
+        fprintf(stderr, "Error: --directory specified multiple times\n");
+        print_usage();
+        exit(EXIT_FAILURE);
+    }
+    const char *directory_path = strchr(arg, '=') + 1;
+    if (chdir(directory_path) < 0) {
+        perror("Failed to change directory");
+        print_usage();
+        exit(EXIT_FAILURE);
+    }
+    directory_set = 1;
+}
+
