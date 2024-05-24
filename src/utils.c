@@ -20,15 +20,23 @@ int is_numeric(const char *str) {
     return 1;
 }
 
-char* local_path_create(char *path) {
-    char* local_path = path;
-    if (strcmp(local_path, "/") == 0) {
-        local_path = ".";
-    } else {
-        local_path++;
+char *local_path_create(const char *path) {
+    char *local_path = NULL;
+    local_path = (char *)malloc(strlen(path) + 1);
+    if (local_path == NULL) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
     }
+
+    if (strcmp(path, "/") == 0) {
+        strcpy(local_path, ".");
+    } else {
+        strcpy(local_path, path + 1);
+    }
+
     return local_path;
 }
+
 
 int compare_string(const void *a, const void *b) {
     const char **str_A = (const char **)a;

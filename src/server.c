@@ -29,12 +29,10 @@
 #define BUFFER_SIZE 1024
 #define MAX_EVENTS 128
 
-
-static int port = DEFAULT_PORT;
-static int server_fd, epoll_fd;
 static int port_set = 0;
 static int directory_set = 0;
-
+static int port = DEFAULT_PORT;
+static int server_fd, epoll_fd;
 
 void run_server();
 void close_server();
@@ -132,7 +130,7 @@ void run_server() {
         for (int i = 0; i < nfds; i++) {
             if (events[i].data.fd == server_fd) {
                 while (1) {
-                    client_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen);
+                    client_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
                     if (client_socket < 0) {
                         if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
                             // No more incoming connections
@@ -200,9 +198,9 @@ void handle_client(int client_socket) {
     }
 
     if (path[strlen(path) - 1] == '/') {
-        handle_dirreq(client_socket, local_path_create(path));
+        handle_dirreq(client_socket, path);
     } else {
-        handle_filereq(client_socket, local_path_create(path));
+        handle_filereq(client_socket, path);
     }
 
     close(client_socket);
@@ -211,10 +209,11 @@ void handle_client(int client_socket) {
 // handle directory request, list content of directory if index.html or index.htm not found, 
 // else serve index.html or index.htm
 void handle_dirreq(int client_socket, char* path) {
+    char *local_path = local_path_create(path);
     char index_path_html[BUFFER_SIZE];
     char index_path_htm[BUFFER_SIZE];
-    snprintf(index_path_html, sizeof(index_path_html), "%s/index.html", path);
-    snprintf(index_path_htm, sizeof(index_path_htm), "%s/index.htm", path);
+    snprintf(index_path_html, sizeof(index_path_html), "%s/index.html", local_path);
+    snprintf(index_path_htm, sizeof(index_path_htm), "%s/index.htm", local_path);
 
     struct stat st;
 
@@ -226,6 +225,8 @@ void handle_dirreq(int client_socket, char* path) {
         } else {
             handle_filereq(client_socket, index_path_htm);
         }
+
+        free(local_path);
         return;
     }
 
@@ -235,7 +236,7 @@ void handle_dirreq(int client_socket, char* path) {
 
     DIR *d;
     struct dirent *dir;
-    d = opendir(path);
+    d = opendir(local_path);
     if (d) {
         while ((dir = readdir(d)) != NULL) {
             char *curr_name = dir->d_name;
@@ -260,12 +261,16 @@ void handle_dirreq(int client_socket, char* path) {
         // directory not found
         write_404(client_socket);
         free(contents);
+        free(local_path);
         return;
     }
+    free(local_path);
 
-    char response_header[BUFFER_SIZE] = RESPONSE_OK;
-    strcat(response_header, "<h1>Directory listing</h1>\n<hr>\n<ul>\n");
-    write(client_socket, response_header, strlen(response_header));
+    // write HTML directory listing
+    char title[sizeof(path) + 64];
+    snprintf(title, sizeof(title), "<h1>Directory listing for %s</h1>\n<hr>\n<ul>\n", path);
+    write(client_socket, RESPONSE_OK, strlen(RESPONSE_OK));
+    write(client_socket, title, strlen(title));
 
     sort_string_array(contents, num_contents);
     char curr_line[BUFFER_SIZE];
@@ -282,17 +287,19 @@ void handle_dirreq(int client_socket, char* path) {
 
 // Handle file request, if file is an html then host it, else download it
 void handle_filereq(int client_socket, char* path) {
-    int file_fd = open(path, O_RDONLY);
+    char *local_path = local_path_create(path);
+    int file_fd = open(local_path, O_RDONLY);
     if (file_fd < 0) {
         perror("Failed to open file");
         // file not found
         write_404(client_socket);
+        free(local_path);
         return;
     }
 
-    char *filename = strrchr(path, '/');
+    char *filename = strrchr(local_path, '/');
     if (filename == NULL) {
-        filename = path;
+        filename = local_path;
     } else {
         filename++;
     }
@@ -311,6 +318,7 @@ void handle_filereq(int client_socket, char* path) {
                 "Content-Type: application/octet-stream\r\n"
                 "Connection: close\r\n\r\n", filename);
     }
+    free(local_path);
 
     write(client_socket, response_header, strlen(response_header));
 

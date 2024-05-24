@@ -23,16 +23,16 @@ void print_usage();
 int is_numeric(const char *str);
 
 /**
- * local_path_create - Converts a path to a local path format.
+ * local_path_create - Create a local path from a rooted path
  *
- * @param path: The path to convert.
+ * @param path: The rooted path.
  * @return: A pointer to the local path string.
  *
  * This function adjusts the given path to a local path format. If the path is "/",
  * it returns a pointer to ".". Otherwise, it returns a pointer to the string starting
  * from the second character, effectively stripping the leading '/'.
  */
-char* local_path_create(char* path);
+char *local_path_create(const char *path);
 
 /**
  * sort_string_array - Sorts an array of strings in case-insensitive alphabetical order.
